@@ -13,8 +13,15 @@ class App extends React.Component {
   generateScore(e) {
     console.log(e.target.value);
     const score = e.target.value;
-    let { scores } = this.state;
-    scores = [...scores, score];
+    const scores = [...this.state.scores];
+    console.log('scores', scores)
+    const prevScore = scores[scores.length - 1] || 0;
+    console.log('prevScore', prevScore);
+    if (Number(prevScore) + Number(score) <= 10) {
+      scores.push(score);
+    } else {
+      alert('Impossible to score more than 10 in a frame. Choose again')
+    }
     this.setState({ scores });
   }
 
