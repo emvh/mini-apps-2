@@ -4,25 +4,65 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      frame: [],
       scores: []
     }
     this.generateScore = this.generateScore.bind(this);
+    this.getFinalScore = this.getFinalScore.bind(this);
   }
 
   generateScore(e) {
-    console.log(e.target.value);
     const score = e.target.value;
     const scores = [...this.state.scores];
     console.log('scores', scores)
     const prevScore = scores[scores.length - 1] || 0;
-    console.log('prevScore', prevScore);
-    if (Number(prevScore) + Number(score) <= 10) {
-      scores.push(score);
-    } else {
-      alert('Impossible to score more than 10 in a frame. Choose again')
+
+    if (scores.length < 20 && scores[18] !== '10') {
+      if (scores.length % 2 === 1) {
+        if (Number(prevScore) + Number(score) <= 10) {
+          scores.push(score);
+        } else {
+          alert('Impossible to score more than 10 in a frame. Choose again')
+        }
+      } else if (scores.length % 2 === 0) {
+        if (Number(score) === 10) {
+          scores.push(score, '0')
+        } else {
+          scores.push(score);
+        }
+      }
+    }
+
+    // 10th frame
+    if (scores.length < 22 && scores[18] === '10' || Number(scores[18]) + Number(scores[19]) === 10) {
+      if (Number(scores[18]) + Number(scores[19]) === 10 && scores[18] !== '10') {
+        scores.push(score);
+        if (scores[20]) {
+          alert('game over');
+        }
+      } else {
+        if (Number(score) === 10) {
+          scores.push(score);
+        } else if (scores.length % 2 === 0) {
+          if (Number(prevScore) + Number(score) <= 10) {
+            scores.push(score);
+          } else {
+            alert('Impossible to score more than 10 in a frame. Choose again')
+          }
+        } else {
+          scores.push(score);
+        }
+      }
+    }
+
+    if (scores.length > 22) {
+      alert('game over');
     }
     this.setState({ scores });
+  }
+
+  getFinalScore() {
+    const scores = [...this.state.scores];
+    return scores.reduce((a,b) => Number(a) + Number(b), 0);
   }
 
   render() {
@@ -31,7 +71,7 @@ class App extends React.Component {
     const style = { border: "1px solid black" }
 
     const buttons = [];
-    for (let i = 1; i < 11; i+=3) {
+    for (let i = 0; i < 11; i+=3) {
       const row = [];
       for (let j = i; j < i + 3; j++) {
         if (j < 11) {
@@ -42,14 +82,15 @@ class App extends React.Component {
     }
 
     const frameScores = [];
-    for (let i = 0; i < scores.length; i += 2) {
+    for (let i = 0; i < 18; i += 2) {
       if (scores[i] && scores[i+1]) {
         frameScores.push(Number(scores[i]) + Number(scores[i+1]));
+        console.log('framescores', frameScores)
       }
     }
 
     const headers = [];
-    for (let i = 1; i < 11; i++) {
+    for (let i = 1; i < 10; i++) {
       headers.push(<th colSpan="2">{i}</th>)
     }
 
@@ -60,9 +101,11 @@ class App extends React.Component {
         </div>
         <table style={style}>
           <thead>
-            <tr><td colSpan="10">Scoreboard</td></tr>
+            <tr><td colSpan="25">Scoreboard</td></tr>
             <tr>
               {headers}
+              <th colSpan="4">10</th>
+              <td>Total Score</td>
             </tr>
           </thead>
           <tbody>
@@ -71,6 +114,8 @@ class App extends React.Component {
             </tr>
             <tr>
               {frameScores.map(sum => <td colSpan="2">{sum}</td>)}
+              <td colSpan="4">{frameScores.slice(18)}</td>
+              <td>{scores.length > 20 && this.getFinalScore()}</td>
             </tr>
           </tbody>
         </table>
